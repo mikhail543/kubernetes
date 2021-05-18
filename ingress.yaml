@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1beta1 # It depends what version of k8s you are using
+kind: Ingress                         # we are deploying ingress
+metadata: 
+  name: Ingress-hosts
+
+spec: 
+  rules: 
+  - host: wwwl.adv-it.net    # It is our main page , and for this page responsible different pod , and different image inside this pod
+    http:
+      paths:
+        - backend:
+           serviceName: main  
+           servicePort: 80
+
+  - host: web1.adv-it.net    # this is our secondary  page , also with different pod and different image inside it !
+    http:
+     paths:
+       - backend:
+          serviceName: web1
+          servicePort: 80 
+  - host: web2.adv-it.net    # different page with pod , and image is different as well! 
+    http:
+     paths:
+       - backend:
+          serviceName: web2
+          servicePort: 80 
+  - host: cat.adv-it.net      # absolutely different image running inside our pod !  We are using hostname , to make it simple for the customers, 
+    http:                     # In real world , nobody gonna access your page through the IP address! 
+     paths:
+       - backend:
+          serviceName: tomcat
+          servicePort: 8080 

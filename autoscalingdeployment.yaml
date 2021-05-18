@@ -1,0 +1,60 @@
+apiVersion  : apps/v1
+kind: Deployment
+metadata: 
+  name  : my-web-deployment-autoscaling
+  labels:
+     app: my-k8s-deployment
+spec: 
+  #replicas: 3  we dont need it because we have autoscaling below for us doing this job !
+  selector: 
+    matchLabels: 
+      project: xyz
+  template: 
+    metadata: 
+      labels: 
+        project: xyz # service will look for those PODs Labels!!!
+    spec: 
+      containers: 
+        - name: xyz-web
+          image: adv4000/k8sphp:latest
+          ports: 
+            - containerPort: 80  
+--- 
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata: 
+  name: my-autoscaling 
+spec: 
+  scaleTargetRef:
+    apiVersion: apps:/v2beta1v1
+    kind: Deployment
+    name: my-web-deployment-autoscaling   # this autoscale is looking for my deployment which exists under this name 
+  minReplicas: 2
+  maxReplicas: 6 
+  metrics:
+    - type: Resource
+      resouce: 
+        name: cpu
+        targetAverageUtilization: 70
+    - type: Resource
+      resouce: 
+        name : memory
+        targetAverageUtilization: 80 
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: 
+  labels: 
+    env: prod
+    owner: Mikhail
+spec:
+  selector:
+    project: xyz  # This what PODs we are looking for 
+  ports:
+    - name      : app-listener
+      protocol  : TCP
+      port      : 80 # port on LoadBalancer
+      targetPort: 80 # port on Pod
+  type: LoadBalancer
